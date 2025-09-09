@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JS Bridge Test</title>
+  <script>
+    // Define the payload
+    const payload = {
+      "screenName": "xxxxx",
+      "errorCode": "xxxxx",
+      "httpErrorCode": "xxxx",
+      "event": {
+        "product": "xxx",
+        "name": "xxxx",
+        "label": "",
+        "ui": "",
+        "description": ""
+      },
+      "customDimension": [
+        {
+          "key": "",
+          "value": ""
+        }
+      ],
+      "firebaseScreen": [
+        {
+          "key": "",
+          "value": ""
+        }
+      ]
+    };
+
+    // Function to send payload via bridge
+    function sendLogScreen() {
+      const body = JSON.stringify(payload);
+      console.log("Prepared Payload:", body);
+
+      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.AnalyticsWebInterface) {
+        console.log("Sending to iOS bridge...");
+        window.webkit.messageHandlers.AnalyticsWebInterface.postMessage({
+          name: 'logScreen',
+          payload: body
+        });
+      } else if (window.AnalyticsWebInterface && window.AnalyticsWebInterface.logScreen) {
+        console.log("Sending to Android bridge...");
+        window.AnalyticsWebInterface.logScreen(body);
+      } else {
+        console.warn("No bridge found. Running fallback.");
+        alert("No bridge detected. Check console for payload.");
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>JS Bridge Test</h1>
+  <button onclick="sendLogScreen()">Send LogScreen Event</button>
+</body>
+</html>
