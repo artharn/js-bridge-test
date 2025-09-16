@@ -50,9 +50,54 @@
       }
     }
   </script>
+
+  <script>
+    // Callback that receives data back from Native
+    const callBack = (deviceInfo) => {
+      console.log("✅ Received device info from Native:", deviceInfo);
+      alert(`Device: ${deviceInfo.brand} ${deviceInfo.model} (OS: ${deviceInfo.device_os})`);
+    };
+
+    // Simulated native response
+    const fakeDeviceInfo = {
+      device_os: "IOS",
+      os_version: "17.7.0",
+      brand: "Apple",
+      model: "iPhone 13 Pro",
+      language: "TH", // Possible values: ["TH", "EN"]
+      entry_point: "{event_label_before_this_page}"
+    };
+
+    document.getElementById("initButton").addEventListener("click", () => {
+      // Payload to send to native
+      const payload = {
+        command: "INITIALIZE",
+        content: {}
+      };
+      const body = JSON.stringify(payload);
+
+      // Detect iOS vs Android (basic detection for demo)
+      const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      // Save callback
+      window.bridge = window.bridge || {};
+      window.bridge.initializeCallback = callBack;
+
+      if (isiOS) {
+        console.log("📤 Sending to iOS Native:", body);
+        // In real app:
+        // window.webkit.messageHandlers.nativeInterface.postMessage(body);
+      } else {
+        console.log("📤 Sending to Android Native:", body);
+        // In real app:
+        // nativeInterface.onRetrievePayloadString(body);
+      }
+    });
+  </script>
 </head>
 <body>
   <h1>JS Bridge Test</h1>
   <button onclick="sendLogScreen()">Send LogScreen Event</button>
+  <button id="initButton">Initialize Coupon</button>
 </body>
 </html>
