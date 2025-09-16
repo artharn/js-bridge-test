@@ -57,7 +57,7 @@
     // Example callback when native responds
     const handleInitializeResponse = (deviceInfo) => {
       console.log("✅ Received device info from Native:", deviceInfo);
-      alert(`Device: ${deviceInfo.brand} ${deviceInfo.model} (OS: ${deviceInfo.device_os})`);
+      alert(`Device: ${deviceInfo}`);
     };
 
     function initializeCoupon() {
