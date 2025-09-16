@@ -54,7 +54,7 @@
   <script>
     // Callback that receives data back from Native
     const callBack = (deviceInfo) => {
-      console.log("✅ Received device info from Native:", deviceInfo);
+      console.warn("✅ Received device info from Native:", deviceInfo);
       alert(`Device: ${deviceInfo.brand} ${deviceInfo.model} (OS: ${deviceInfo.device_os})`);
     };
 
@@ -86,11 +86,11 @@
       if (isiOS) {
         console.log("📤 Sending to iOS Native:", body);
         // In real app:
-        // window.webkit.messageHandlers.nativeInterface.postMessage(body);
+        window.webkit.messageHandlers.nativeInterface.postMessage(body);
       } else {
         console.log("📤 Sending to Android Native:", body);
         // In real app:
-        // nativeInterface.onRetrievePayloadString(body);
+        window.nativeInterface.onRetrievePayloadString(body);
       }
     });
   </script>
