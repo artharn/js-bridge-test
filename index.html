@@ -83,11 +83,75 @@
         alert("No native bridge detected. Check console for INITIALIZE payload.");
       }
     }
+
+    // ---------------------------
+    // Coupon ROUNTING flow
+    // ---------------------------
+
+    // Generic function to send ROUTING payload
+function sendRouting(destination, additionalParams = "") {
+  // Build ROUTING payload
+  const initPayload = {
+    command: "ROUTING",
+    content: {
+      destination: destination,
+      additionalParams: additionalParams
+    }
+  };
+  const body = JSON.stringify(initPayload);
+
+  // Save callback
+  window.bridge = window.bridge || {};
+  window.bridge.initializeCallback = handleInitializeResponse;
+
+  // Send to native
+  if (window.webkit?.messageHandlers?.nativeInterface) {
+    console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
+    window.webkit.messageHandlers.nativeInterface.postMessage(body);
+  } else if (window.nativeInterface?.onRetrievePayloadString) {
+    console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
+    window.nativeInterface.onRetrievePayloadString(body);
+  } else {
+    console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
+    alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
+  }
+}
+
+// Specific functions for each destination
+function routeCloseWebview() {
+  sendRouting("CLOSE_WEBVIEW");
+}
+
+function routeBillPaymentLanding() {
+  sendRouting("BILL_PAYMENT_LANDING", "page=tracking&campaignCode=xxx");
+}
+
+function routeTopupLanding() {
+  sendRouting("TOPUP_LANDING");
+}
+
+function routeQrScan() {
+  sendRouting("QR_SCAN");
+}
+
+function routePocketProductHighlight() {
+  sendRouting("POCKET_PRODUCT_HIGHLIGHT");
+}
+
+function routePocketDetail() {
+  sendRouting("POCKET_DETAIL");
+}
   </script>
 </head>
 <body>
   <h1>JS Bridge Test</h1>
   <button onclick="sendLogScreen()">Send LogScreen Event</button>
   <button onclick="initializeCoupon()">Initialize Coupon</button>
+  <button onclick="routeCloseWebview()">Close</button>
+  <button onclick="routeBillPaymentLanding()">BillPay</button>
+  <button onclick="routeTopupLanding()">TopUp</button>
+  <button onclick="routeQrScan()">Scan</button>
+  <button onclick="routePocketProductHighlight()">PDHL</button>
+  <button onclick="routePocketDetail()">PocketDetail</button>
 </body>
 </html>
