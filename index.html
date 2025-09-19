@@ -159,24 +159,6 @@
       }
     }
 
-    function showParams(params) {
-      const display = document.getElementById("paramDisplay");
-      display.style.display = "block";
-
-      // Convert query string to readable format
-      let formatted = "";
-      params.split("&").forEach(p => {
-        const [key, val] = p.split("=");
-        formatted += `${key}: ${val}\n`;
-      });
-
-      document.getElementById("paramContent").innerText = formatted || "No parameters found.";
-    }
-
-    function closeParams() {
-      document.getElementById("paramDisplay").style.display = "none";
-    }
-
     // Destination functions
     function routeCloseWebview() { sendRouting("CLOSE_WEBVIEW"); }
     function routeBillPaymentLanding() { sendRouting("BILL_PAYMENT_LANDING", "page=tracking&campaignCode=xxx"); }
@@ -184,6 +166,28 @@
     function routeQrScan() { sendRouting("QR_SCAN"); }
     function routePocketProductHighlight() { sendRouting("POCKET_PRODUCT_HIGHLIGHT"); }
     function routePocketDetail() { sendRouting("POCKET_DETAIL"); }
+
+    // Show URL query params in center
+    function showUrlParams() {
+      const queryString = window.location.search.substring(1); // remove "?"
+      const display = document.getElementById("paramDisplay");
+
+      if (!queryString) {
+        display.innerHTML = "<h2>URL Query Parameters</h2><div>No parameters found.</div>";
+        return;
+      }
+
+      // Format params into key:value
+      let formatted = "";
+      queryString.split("&").forEach(p => {
+        const [key, val] = p.split("=");
+        formatted += `${key}: ${decodeURIComponent(val || "")}\n`;
+      });
+
+      display.innerHTML = `<h2>URL Query Parameters</h2><div>${formatted.replace(/\n/g, "<br>")}</div>`;
+    }
+
+    window.onload = showUrlParams;
   </script>
 </head>
 <body>
@@ -198,10 +202,6 @@
 <button onclick="routePocketDetail()">PocketDetail</button><br>
 
 <!-- Center screen param display -->
-<div id="paramDisplay">
-  <h2>Query Parameters</h2>
-  <div id="paramContent"></div>
-  <button id="closeDisplay" onclick="closeParams()">Close</button>
-</div>
+<div id="paramDisplay"></div>
 </body>
 </html>
