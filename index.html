@@ -26,7 +26,7 @@
     button:hover {
       background-color: #0056b3;
     }
-    /* Center query param display */
+    /* Always visible query param box */
     #paramDisplay {
       position: fixed;
       top: 50%;
@@ -38,7 +38,6 @@
       border: 2px solid #007bff;
       border-radius: 12px;
       box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
-      display: none;
       text-align: left;
       white-space: pre-wrap;
     }
@@ -46,18 +45,6 @@
       margin-top: 0;
       font-size: 18px;
       color: #007bff;
-    }
-    #closeDisplay {
-      margin-top: 10px;
-      padding: 6px 12px;
-      background: #dc3545;
-      border: none;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    #closeDisplay:hover {
-      background: #a71d2a;
     }
   </style>
   <script>
@@ -142,7 +129,7 @@
       window.bridge = window.bridge || {};
       window.bridge.initializeCallback = handleInitializeResponse;
 
-      // Show additional params in center box
+      // Show additional params in center box (if passed)
       if (additionalParams) {
         showParams(additionalParams);
       }
@@ -167,13 +154,15 @@
     function routePocketProductHighlight() { sendRouting("POCKET_PRODUCT_HIGHLIGHT"); }
     function routePocketDetail() { sendRouting("POCKET_DETAIL"); }
 
-    // Show URL query params in center
+    // ---------------------------
+    // Display URL Query Params
+    // ---------------------------
     function showUrlParams() {
       const queryString = window.location.search.substring(1); // remove "?"
-      const display = document.getElementById("paramDisplay");
+      const display = document.getElementById("paramText");
 
       if (!queryString) {
-        display.innerHTML = "<h2>URL Query Parameters</h2><div>No parameters found.</div>";
+        display.innerHTML = "No parameters found.";
         return;
       }
 
@@ -184,7 +173,17 @@
         formatted += `${key}: ${decodeURIComponent(val || "")}\n`;
       });
 
-      display.innerHTML = `<h2>URL Query Parameters</h2><div>${formatted.replace(/\n/g, "<br>")}</div>`;
+      display.innerHTML = formatted.replace(/\n/g, "<br>");
+    }
+
+    function showParams(params) {
+      const display = document.getElementById("paramText");
+      let formatted = "";
+      params.split("&").forEach(p => {
+        const [key, val] = p.split("=");
+        formatted += `${key}: ${decodeURIComponent(val || "")}\n`;
+      });
+      display.innerHTML = formatted.replace(/\n/g, "<br>");
     }
 
     window.onload = showUrlParams;
@@ -201,7 +200,10 @@
 <button onclick="routePocketProductHighlight()">PDHL</button><br>
 <button onclick="routePocketDetail()">PocketDetail</button><br>
 
-<!-- Center screen param display -->
-<div id="paramDisplay"></div>
+<!-- Always visible param display -->
+<div id="paramDisplay">
+  <h2>URL Query Parameters</h2>
+  <p id="paramText">Loading parameters...</p>
+</div>
 </body>
 </html>
