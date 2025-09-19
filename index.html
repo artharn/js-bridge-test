@@ -3,45 +3,93 @@
 <head>
   <meta charset="UTF-8">
   <title>JS Bridge Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    /* Center query param display */
+    #paramDisplay {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 300px;
+      padding: 20px;
+      background: #f8f9fa;
+      border: 2px solid #007bff;
+      border-radius: 12px;
+      box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+      display: none;
+      text-align: left;
+      white-space: pre-wrap;
+    }
+    #paramDisplay h2 {
+      margin-top: 0;
+      font-size: 18px;
+      color: #007bff;
+    }
+    #closeDisplay {
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: #dc3545;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #closeDisplay:hover {
+      background: #a71d2a;
+    }
+  </style>
   <script>
-    // Define the payload
+    // ---------------------------
+    // LogScreen Payload
+    // ---------------------------
     const payload = {
-      "screenName": "xxxxx",
-      "errorCode": "xxxxx",
-      "httpErrorCode": "xxxx",
-      "event": {
-        "product": "xxx",
-        "name": "xxxx",
-        "label": "",
-        "ui": "",
-        "description": ""
+      screenName: "xxxxx",
+      errorCode: "xxxxx",
+      httpErrorCode: "xxxx",
+      event: {
+        product: "xxx",
+        name: "xxxx",
+        label: "",
+        ui: "",
+        description: ""
       },
-      "customDimension": [
-        {
-          "key": "",
-          "value": ""
-        }
-      ],
-      "firebaseScreen": [
-        {
-          "key": "",
-          "value": ""
-        }
-      ]
+      customDimension: [{ key: "", value: "" }],
+      firebaseScreen: [{ key: "", value: "" }]
     };
 
-    // Function to send payload via bridge
     function sendLogScreen() {
       const body = JSON.stringify(payload);
       console.log("Prepared Payload:", body);
 
-      if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.AnalyticsWebInterface) {
+      if (window.webkit?.messageHandlers?.AnalyticsWebInterface) {
         console.log("Sending to iOS bridge...");
         window.webkit.messageHandlers.AnalyticsWebInterface.postMessage({
           name: 'logScreen',
           payload: body
         });
-      } else if (window.AnalyticsWebInterface && window.AnalyticsWebInterface.logScreen) {
+      } else if (window.AnalyticsWebInterface?.logScreen) {
         console.log("Sending to Android bridge...");
         window.AnalyticsWebInterface.logScreen(body);
       } else {
@@ -51,24 +99,20 @@
     }
 
     // ---------------------------
-    // Coupon INITIALIZE flow
+    // INITIALIZE Flow
     // ---------------------------
-
-    // Example callback when native responds
     const handleInitializeResponse = (deviceInfo) => {
       console.log("✅ Received device info from Native:", deviceInfo);
       alert(`Device: ${deviceInfo}`);
     };
 
     function initializeCoupon() {
-      // Build INITIALIZE payload
       const initPayload = {
         command: "INITIALIZE",
         content: {}
       };
       const body = JSON.stringify(initPayload);
 
-      // Save callback
       window.bridge = window.bridge || {};
       window.bridge.initializeCallback = handleInitializeResponse;
 
@@ -85,73 +129,79 @@
     }
 
     // ---------------------------
-    // Coupon ROUNTING flow
+    // ROUTING Flow
     // ---------------------------
+    function sendRouting(destination, additionalParams = "") {
+      const initPayload = {
+        command: "ROUTING",
+        content: { destination, additionalParams }
+      };
+      const body = JSON.stringify(initPayload);
 
-    // Generic function to send ROUTING payload
-function sendRouting(destination, additionalParams = "") {
-  // Build ROUTING payload
-  const initPayload = {
-    command: "ROUTING",
-    content: {
-      destination: destination,
-      additionalParams: additionalParams
+      // Save callback
+      window.bridge = window.bridge || {};
+      window.bridge.initializeCallback = handleInitializeResponse;
+
+      // Show additional params in center box
+      if (additionalParams) {
+        showParams(additionalParams);
+      }
+
+      if (window.webkit?.messageHandlers?.nativeInterface) {
+        console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
+        window.webkit.messageHandlers.nativeInterface.postMessage(body);
+      } else if (window.nativeInterface?.onRetrievePayloadString) {
+        console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
+        window.nativeInterface.onRetrievePayloadString(body);
+      } else {
+        console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
+        alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
+      }
     }
-  };
-  const body = JSON.stringify(initPayload);
 
-  // Save callback
-  window.bridge = window.bridge || {};
-  window.bridge.initializeCallback = handleInitializeResponse;
+    function showParams(params) {
+      const display = document.getElementById("paramDisplay");
+      display.style.display = "block";
 
-  // Send to native
-  if (window.webkit?.messageHandlers?.nativeInterface) {
-    console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
-    window.webkit.messageHandlers.nativeInterface.postMessage(body);
-  } else if (window.nativeInterface?.onRetrievePayloadString) {
-    console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
-    window.nativeInterface.onRetrievePayloadString(body);
-  } else {
-    console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
-    alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
-  }
-}
+      // Convert query string to readable format
+      let formatted = "";
+      params.split("&").forEach(p => {
+        const [key, val] = p.split("=");
+        formatted += `${key}: ${val}\n`;
+      });
 
-// Specific functions for each destination
-function routeCloseWebview() {
-  sendRouting("CLOSE_WEBVIEW");
-}
+      document.getElementById("paramContent").innerText = formatted || "No parameters found.";
+    }
 
-function routeBillPaymentLanding() {
-  sendRouting("BILL_PAYMENT_LANDING", "page=tracking&campaignCode=xxx");
-}
+    function closeParams() {
+      document.getElementById("paramDisplay").style.display = "none";
+    }
 
-function routeTopupLanding() {
-  sendRouting("TOPUP_LANDING");
-}
-
-function routeQrScan() {
-  sendRouting("QR_SCAN");
-}
-
-function routePocketProductHighlight() {
-  sendRouting("POCKET_PRODUCT_HIGHLIGHT");
-}
-
-function routePocketDetail() {
-  sendRouting("POCKET_DETAIL");
-}
+    // Destination functions
+    function routeCloseWebview() { sendRouting("CLOSE_WEBVIEW"); }
+    function routeBillPaymentLanding() { sendRouting("BILL_PAYMENT_LANDING", "page=tracking&campaignCode=xxx"); }
+    function routeTopupLanding() { sendRouting("TOPUP_LANDING"); }
+    function routeQrScan() { sendRouting("QR_SCAN"); }
+    function routePocketProductHighlight() { sendRouting("POCKET_PRODUCT_HIGHLIGHT"); }
+    function routePocketDetail() { sendRouting("POCKET_DETAIL"); }
   </script>
 </head>
 <body>
-  <h1>JS Bridge Test</h1>
-  <button onclick="sendLogScreen()">Send LogScreen Event</button>
-  <button onclick="initializeCoupon()">Initialize Coupon</button>
-  <button onclick="routeCloseWebview()">Close</button>
-  <button onclick="routeBillPaymentLanding()">BillPay</button>
-  <button onclick="routeTopupLanding()">TopUp</button>
-  <button onclick="routeQrScan()">Scan</button>
-  <button onclick="routePocketProductHighlight()">PDHL</button>
-  <button onclick="routePocketDetail()">PocketDetail</button>
+<h1>JS Bridge Test</h1>
+<button onclick="sendLogScreen()">Send LogScreen Event</button><br>
+<button onclick="initializeCoupon()">Initialize Coupon</button><br>
+<button onclick="routeCloseWebview()">Close</button><br>
+<button onclick="routeBillPaymentLanding()">BillPay</button><br>
+<button onclick="routeTopupLanding()">TopUp</button><br>
+<button onclick="routeQrScan()">Scan</button><br>
+<button onclick="routePocketProductHighlight()">PDHL</button><br>
+<button onclick="routePocketDetail()">PocketDetail</button><br>
+
+<!-- Center screen param display -->
+<div id="paramDisplay">
+  <h2>Query Parameters</h2>
+  <div id="paramContent"></div>
+  <button id="closeDisplay" onclick="closeParams()">Close</button>
+</div>
 </body>
 </html>
