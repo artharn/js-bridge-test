@@ -120,10 +120,10 @@
     // ---------------------------
     // ROUTING Flow
     // ---------------------------
-    function sendRouting(destination, additionalParams = "") {
+    function sendRouting(destination, additionalParams = "", params = "") {
       const initPayload = {
         command: "ROUTING",
-        content: { destination, additionalParams }
+        content: { destination, additionalParams, params }
       };
       const body = JSON.stringify(initPayload);
 
@@ -153,7 +153,9 @@
     function routeBillPaymentLanding() { sendRouting("BILL_PAYMENT_LANDING", "page=tracking&campaignCode=xxx"); }
     function routeTopupLanding() { sendRouting("TOPUP_LANDING"); }
     function routeQrScan() { sendRouting("QR_SCAN"); }
-    function routePocketProductHighlight() { sendRouting("POCKET_PRODUCT_HIGHLIGHT"); }
+    function routePocketProductHighlight() { sendRouting("POCKET_PRODUCT_HIGHLIGHT", "", "{
+      \"campaignCode\": \"20\"
+    }"); }
     function routePocketDetail() { sendRouting("POCKET_DETAIL"); }
 
     // ---------------------------
