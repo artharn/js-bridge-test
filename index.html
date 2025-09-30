@@ -120,10 +120,10 @@
     // ---------------------------
     // ROUTING Flow
     // ---------------------------
-    function sendRouting(destination, additionalParams = "", params = null) {
+    function sendRouting(destination, additionalParams = "", params = null, mode = null, couponId = null) {
       const initPayload = {
         command: "ROUTING",
-        content: { destination, additionalParams, params }
+        content: { destination, additionalParams, params, mode, couponId }
       };
       const body = JSON.stringify(initPayload);
 
@@ -157,6 +157,8 @@
     sendRouting("POCKET_PRODUCT_HIGHLIGHT", "", { campaignCode: "20" });
     }
     function routePocketDetail() { sendRouting("POCKET_DETAIL"); }
+    function routeMyCoupon() {sendRouting("COUPON", "", null, "M")}
+    function routeDetailCoupon() {sendRouting("COUPON", "", null, "D", "3d1dbc9a-2221-43b9-8619-ed186d885e2020250917170417")}
 
     // ---------------------------
     // Display URL Query Params
