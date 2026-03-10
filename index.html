@@ -1,199 +1,378 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>JS Bridge Test</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 10px;
-      text-align: center;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    button {
-      width: 200px;
-      padding: 10px 20px;
-      font-size: 14px;
-      border-radius: 8px;
-      border: none;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #0056b3;
-    }
-    /* Always visible query param box */
-    #paramDisplay {
-      margin-top: 30px;
-      width: 300px;
-      padding: 20px;
-      background: #f8f9fa;
-      border: 2px solid #007bff;
-      border-radius: 12px;
-      box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
-      text-align: left;
-      white-space: pre-wrap;
-    }
-    #paramDisplay h2 {
-      margin-top: 0;
-      font-size: 18px;
-      color: #007bff;
-    }
-  </style>
-  <script>
+    <meta charset="UTF-8">
+    <title>JS Bridge Test</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 10px;
+          text-align: center;
+        }
+        h1 {
+          margin-bottom: 20px;
+        }
+        h3 {
+          margin: 14px 0 4px 0;
+          color: #333;
+          font-size: 14px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          border-bottom: 1px solid #ddd;
+          width: 220px;
+          padding-bottom: 4px;
+        }
+        button {
+          width: 200px;
+          padding: 10px 20px;
+          font-size: 14px;
+          border-radius: 8px;
+          border: none;
+          background-color: #007bff;
+          color: white;
+          cursor: pointer;
+        }
+        button:hover {
+          background-color: #0056b3;
+        }
+        button.green {
+          background-color: #28a745;
+        }
+        button.green:hover {
+          background-color: #1e7e34;
+        }
+        button.orange {
+          background-color: #fd7e14;
+        }
+        button.orange:hover {
+          background-color: #e8650a;
+        }
+        button.red {
+          background-color: #dc3545;
+        }
+        button.red:hover {
+          background-color: #b02a37;
+        }
+        button.purple {
+          background-color: #6f42c1;
+        }
+        button.purple:hover {
+          background-color: #59359a;
+        }
+
+        /* Always visible query param box */
+        #paramDisplay {
+          margin-top: 30px;
+          width: 300px;
+          padding: 20px;
+          background: #f8f9fa;
+          border: 2px solid #007bff;
+          border-radius: 12px;
+          box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+          text-align: left;
+          white-space: pre-wrap;
+        }
+        #paramDisplay h2 {
+          margin-top: 0;
+          font-size: 18px;
+          color: #007bff;
+        }
+
+        /* Callback log box */
+        #callbackDisplay {
+          margin-top: 16px;
+          width: 300px;
+          padding: 16px 20px;
+          background: #f0fff4;
+          border: 2px solid #28a745;
+          border-radius: 12px;
+          box-shadow: 0px 4px 12px rgba(0,0,0,0.1);
+          text-align: left;
+        }
+        #callbackDisplay h2 {
+          margin-top: 0;
+          font-size: 16px;
+          color: #28a745;
+        }
+        #callbackLog {
+          font-size: 12px;
+          white-space: pre-wrap;
+          color: #333;
+          max-height: 160px;
+          overflow-y: auto;
+        }
+    </style>
+    <script>
+        // ---------------------------
+        // LogScreen Payload
+        // ---------------------------
+        const payload = {
+          screenName: "xxxxx",
+          errorCode: "xxxxx",
+          httpErrorCode: "xxxx",
+          event: {
+            product: "xxx",
+            name: "xxxx",
+            label: "",
+            ui: "",
+            description: ""
+          },
+          customDimension: [{ key: "", value: "" }],
+          firebaseScreen: [{ key: "", value: "" }]
+        };
+
+        function sendLogScreen() {
+          const body = JSON.stringify(payload);
+          console.log("Prepared Payload:", body);
+
+          if (window.webkit?.messageHandlers?.AnalyticsWebInterface) {
+            console.log("Sending to iOS bridge...");
+            window.webkit.messageHandlers.AnalyticsWebInterface.postMessage({
+              name: 'logScreen',
+              payload: body
+            });
+          } else if (window.AnalyticsWebInterface?.logScreen) {
+            console.log("Sending to Android bridge...");
+            window.AnalyticsWebInterface.logScreen(body);
+          } else {
+            console.warn("No bridge found. Running fallback.");
+            alert("No bridge detected. Check console for payload.");
+          }
+        }
+
+        // ---------------------------
+        // INITIALIZE Flow
+        // ---------------------------
+        const handleInitializeResponse = (deviceInfo) => {
+          console.log("✅ Received device info from Native:", deviceInfo);
+          alert(`Device: ${deviceInfo}`);
+        };
+
+        function initializeCoupon() {
+          const initPayload = {
+            command: "INITIALIZE",
+            content: {}
+          };
+          const body = JSON.stringify(initPayload);
+
+          window.bridge = window.bridge || {};
+          window.bridge.initializeCallback = handleInitializeResponse;
+
+          if (window.webkit?.messageHandlers?.nativeInterface) {
+            console.log("📤 Sending INITIALIZE to iOS:", body);
+            window.webkit.messageHandlers.nativeInterface.postMessage(body);
+          } else if (window.nativeInterface?.onRetrievePayloadString) {
+            console.log("📤 Sending INITIALIZE to Android:", body);
+            window.nativeInterface.onRetrievePayloadString(body);
+          } else {
+            console.warn("No native bridge found for INITIALIZE. Running fallback.");
+            alert("No native bridge detected. Check console for INITIALIZE payload.");
+          }
+        }
+
+        // ---------------------------
+        // ROUTING Flow
+        // ---------------------------
+        function sendRouting(destination, additionalParams = null, params = null, mode = null, couponId = null) {
+          const initPayload = {
+            command: "ROUTING",
+            content: { destination, additionalParams, params, mode, couponId }
+          };
+          const body = JSON.stringify(initPayload);
+
+          // Save callback
+          window.bridge = window.bridge || {};
+          window.bridge.initializeCallback = handleInitializeResponse;
+
+          // Show additional params in center box (if passed)
+          if (additionalParams) {
+            showParams(additionalParams);
+          }
+
+          if (window.webkit?.messageHandlers?.nativeInterface) {
+            console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
+            window.webkit.messageHandlers.nativeInterface.postMessage(body);
+          } else if (window.nativeInterface?.onRetrievePayloadString) {
+            console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
+            window.nativeInterface.onRetrievePayloadString(body);
+          } else {
+            console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
+            alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
+          }
+        }
+
+        // Destination functions
+        function routeCloseWebview() { sendRouting("CLOSE_WEBVIEW"); }
+        function routeBillPaymentLanding() { sendRouting("BILL_PAYMENT_LANDING", "page=tracking&campaignCode=xxx"); }
+        function routeTopupLanding() { sendRouting("TOPUP_LANDING"); }
+        function routeQrScan() { sendRouting("QR_SCAN"); }
+        function routePocketProductHighlight() {
+        sendRouting("POCKET_PRODUCT_HIGHLIGHT", "", { campaignCode: "20" });
+        }
+        function routePocketDetail() { sendRouting("POCKET_DETAIL"); }
+        function routeMyCoupon() {sendRouting("COUPON", null, null, "M")}
+        function routeDetailCoupon() {sendRouting("COUPON", null, null, "D", "3d1dbc9a-2221-43b9-8619-ed186d885e2020250917170417")}
+
     // ---------------------------
-    // LogScreen Payload
-    // ---------------------------
-    const payload = {
-      screenName: "xxxxx",
-      errorCode: "xxxxx",
-      httpErrorCode: "xxxx",
-      event: {
-        product: "xxx",
-        name: "xxxx",
-        label: "",
-        ui: "",
-        description: ""
-      },
-      customDimension: [{ key: "", value: "" }],
-      firebaseScreen: [{ key: "", value: "" }]
-    };
+        // PointPay Bridge Helper
+        // ---------------------------
+        function callPointPay(fnName, ...args) {
+          const isAndroid = !!(window.pointPayCH);
+          const isIOS = !!(window.webkit?.messageHandlers?.observer);
 
-    function sendLogScreen() {
-      const body = JSON.stringify(payload);
-      console.log("Prepared Payload:", body);
+          console.log(`📤 Calling pointPayCH.${fnName}(${args.join(', ')}) — Android: ${isAndroid}, iOS: ${isIOS}`);
 
-      if (window.webkit?.messageHandlers?.AnalyticsWebInterface) {
-        console.log("Sending to iOS bridge...");
-        window.webkit.messageHandlers.AnalyticsWebInterface.postMessage({
-          name: 'logScreen',
-          payload: body
-        });
-      } else if (window.AnalyticsWebInterface?.logScreen) {
-        console.log("Sending to Android bridge...");
-        window.AnalyticsWebInterface.logScreen(body);
-      } else {
-        console.warn("No bridge found. Running fallback.");
-        alert("No bridge detected. Check console for payload.");
-      }
-    }
+          if (isAndroid) {
+            window.pointPayCH[fnName](...args);
+          } else if (isIOS) {
+            // iOS uses observer postMessage with command key
+            const message = { command: fnName };
+            // map args to correct iOS keys per function
+            if (fnName === 'internalPartnerPinVerify') message.partnerReqId = args[0];
+            if (fnName === 'closeWebview' && args[0]) message.data = args[0];
+            if (fnName === 'getPointDiscount') message.pointPayTransectionID = args[0]; // note: spec has typo "Transection"
+            if (fnName === 'openExternalBrowser') message.data = args[0];
+            window.webkit.messageHandlers.observer.postMessage(message);
+          } else {
+            console.warn(`⚠️ No pointPayCH bridge found for: ${fnName}`);
+            alert(`[MOCK] pointPayCH.${fnName}(${args.join(', ')})\n\nNo native bridge detected.`);
+          }
+        }
 
-    // ---------------------------
-    // INITIALIZE Flow
-    // ---------------------------
-    const handleInitializeResponse = (deviceInfo) => {
-      console.log("✅ Received device info from Native:", deviceInfo);
-      alert(`Device: ${deviceInfo}`);
-    };
+        // ---------------------------
+        // WebView → Native: PointPay
+        // ---------------------------
 
-    function initializeCoupon() {
-      const initPayload = {
-        command: "INITIALIZE",
-        content: {}
-      };
-      const body = JSON.stringify(initPayload);
+        // internalPartnerPinVerify — WebView generates UUID, sends to native to open PIN screen
+        function testInternalPartnerPinVerify() {
+          const partnerReqId = generateUUID();
+          appendCallbackLog(`📤 internalPartnerPinVerify | partnerReqId: ${partnerReqId}`);
+          callPointPay('internalPartnerPinVerify', partnerReqId);
+        }
 
-      window.bridge = window.bridge || {};
-      window.bridge.initializeCallback = handleInitializeResponse;
+        // closeWebview variants
+        function testCloseWebview() {
+          appendCallbackLog(`📤 closeWebview (no data)`);
+          if (window.pointPayCH) {
+            window.pointPayCH.closeWebview();
+          } else if (window.webkit?.messageHandlers?.observer) {
+            window.webkit.messageHandlers.observer.postMessage({ command: 'closeWebview' });
+          } else {
+            alert('[MOCK] closeWebview() — no data');
+          }
+        }
 
-      if (window.webkit?.messageHandlers?.nativeInterface) {
-        console.log("📤 Sending INITIALIZE to iOS:", body);
-        window.webkit.messageHandlers.nativeInterface.postMessage(body);
-      } else if (window.nativeInterface?.onRetrievePayloadString) {
-        console.log("📤 Sending INITIALIZE to Android:", body);
-        window.nativeInterface.onRetrievePayloadString(body);
-      } else {
-        console.warn("No native bridge found for INITIALIZE. Running fallback.");
-        alert("No native bridge detected. Check console for INITIALIZE payload.");
-      }
-    }
+        function testCloseWebviewRegistered() {
+          appendCallbackLog(`📤 closeWebview | data: registered`);
+          callPointPay('closeWebview', 'registered');
+        }
 
-    // ---------------------------
-    // ROUTING Flow
-    // ---------------------------
-    function sendRouting(destination, additionalParams = "", params = null, mode = null, couponId = null) {
-      const initPayload = {
-        command: "ROUTING",
-        content: { destination, additionalParams, params, mode, couponId }
-      };
-      const body = JSON.stringify(initPayload);
+        function testCloseWebviewInactive() {
+          appendCallbackLog(`📤 closeWebview | data: inactive`);
+          callPointPay('closeWebview', 'inactive');
+        }
 
-      // Save callback
-      window.bridge = window.bridge || {};
-      window.bridge.initializeCallback = handleInitializeResponse;
+        function testCloseWebviewBackToPointHome() {
+          appendCallbackLog(`📤 closeWebview | data: backToPointHome`);
+          callPointPay('closeWebview', 'backToPointHome');
+        }
 
-      // Show additional params in center box (if passed)
-      if (additionalParams) {
-        showParams(additionalParams);
-      }
+        // getPointDiscount — with UUID
+        function testGetPointDiscount() {
+          const pointPayTransactionID = generateUUID();
+          appendCallbackLog(`📤 getPointDiscount | pointPayTransactionID: ${pointPayTransactionID}`);
+          callPointPay('getPointDiscount', pointPayTransactionID);
+        }
 
-      if (window.webkit?.messageHandlers?.nativeInterface) {
-        console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
-        window.webkit.messageHandlers.nativeInterface.postMessage(body);
-      } else if (window.nativeInterface?.onRetrievePayloadString) {
-        console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
-        window.nativeInterface.onRetrievePayloadString(body);
-      } else {
-        console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
-        alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
-      }
-    }
+        // getPointDiscount — with null (user cancelled)
+        function testGetPointDiscountNull() {
+          appendCallbackLog(`📤 getPointDiscount | pointPayTransactionID: null`);
+          callPointPay('getPointDiscount', null);
+        }
 
-    // Destination functions
-    function routeCloseWebview() { sendRouting("CLOSE_WEBVIEW"); }
-    function routeBillPaymentLanding() { sendRouting("BILL_PAYMENT_LANDING", "page=tracking&campaignCode=xxx"); }
-    function routeTopupLanding() { sendRouting("TOPUP_LANDING"); }
-    function routeQrScan() { sendRouting("QR_SCAN"); }
-    function routePocketProductHighlight() {
-    sendRouting("POCKET_PRODUCT_HIGHLIGHT", "", { campaignCode: "20" });
-    }
-    function routePocketDetail() { sendRouting("POCKET_DETAIL"); }
-    function routeMyCoupon() {sendRouting("COUPON", "", null, "M")}
-    function routeDetailCoupon() {sendRouting("COUPON", "", null, "D", "3d1dbc9a-2221-43b9-8619-ed186d885e2020250917170417")}
+        // openExternalBrowser
+        function testOpenExternalBrowser() {
+          const url = 'https://www.google.com';
+          appendCallbackLog(`📤 openExternalBrowser | url: ${url}`);
+          callPointPay('openExternalBrowser', url);
+        }
 
-    // ---------------------------
-    // Display URL Query Params
-    // ---------------------------
-    function showUrlParams() {
-      const queryString = window.location.search.substring(1); // remove "?"
-      const display = document.getElementById("paramText");
+        // ---------------------------
+        // Native → WebView: PointPay Callbacks
+        // ---------------------------
 
-      if (!queryString) {
-        display.innerHTML = "No parameters found.";
-        return;
-      }
+        // Called by Native after PIN verified successfully
+        // refId = pinVerificationRefID from POST /vb/v1/bff-mobile-internal-partner-auth/v1/pin/verification
+        function internalPartnerPinVerifyCallback(refId) {
+          const msg = `✅ internalPartnerPinVerifyCallback | refId: ${refId}`;
+          console.log(msg);
+          appendCallbackLog(msg);
+        }
 
-      // Format params into key:value
-      let formatted = "";
-      queryString.split("&").forEach(p => {
-        const [key, val] = p.split("=");
-        formatted += `${key}: ${decodeURIComponent(val || "")}\n`;
-      });
+        // Called by Native when user taps back from PIN screen
+        function backFromInternalPartnerPin() {
+          const msg = `✅ backFromInternalPartnerPin | (no params)`;
+          console.log(msg);
+          appendCallbackLog(msg);
+        }
 
-      display.innerHTML = formatted.replace(/\n/g, "<br>");
-    }
+        // ---------------------------
+        // Utilities
+        // ---------------------------
+        function generateUUID() {
+          return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+        }
 
-    function showParams(params) {
-      const display = document.getElementById("paramText");
-      let formatted = "";
-      params.split("&").forEach(p => {
-        const [key, val] = p.split("=");
-        formatted += `${key}: ${decodeURIComponent(val || "")}\n`;
-      });
-      display.innerHTML = formatted.replace(/\n/g, "<br>");
-    }
+        function appendCallbackLog(msg) {
+          const el = document.getElementById('callbackLog');
+          const time = new Date().toLocaleTimeString();
+          el.textContent = `[${time}] ${msg}\n` + el.textContent;
+        }
 
-    window.onload = showUrlParams;
-  </script>
+        // ---------------------------
+        // Display URL Query Params
+        // ---------------------------
+        function showUrlParams() {
+          const queryString = window.location.search.substring(1); // remove "?"
+          const display = document.getElementById("paramText");
+
+          if (!queryString) {
+            display.innerHTML = "No parameters found.";
+            return;
+          }
+
+          // Format params into key:value
+          let formatted = "";
+          queryString.split("&").forEach(p => {
+            const [key, val] = p.split("=");
+            formatted += `${key}: ${decodeURIComponent(val || "")}\n`;
+          });
+
+          display.innerHTML = formatted.replace(/\n/g, "<br>");
+        }
+
+        function showParams(params) {
+          const display = document.getElementById("paramText");
+          let formatted = "";
+          params.split("&").forEach(p => {
+            const [key, val] = p.split("=");
+            formatted += `${key}: ${decodeURIComponent(val || "")}\n`;
+          });
+          display.innerHTML = formatted.replace(/\n/g, "<br>");
+        }
+
+        window.onload = showUrlParams;
+    </script>
 </head>
 <body>
 <h1>JS Bridge Test</h1>
@@ -212,8 +391,26 @@
 
 <!-- Always visible param display -->
 <div id="paramDisplay">
-  <h2>URL Query Parameters</h2>
-  <p id="paramText">Loading parameters...</p>
+    <h2>URL Query Parameters</h2>
+    <p id="paramText">Loading parameters...</p>
+</div>
+
+<!-- WebView → Native: PointPay -->
+<h3>WebView → Native (PointPay)</h3>
+<button class="purple" onclick="testInternalPartnerPinVerify()">internalPartnerPinVerify</button>
+<button class="purple" onclick="testCloseWebview()">closeWebview</button>
+<button class="purple" onclick="testCloseWebviewRegistered()">closeWebview (registered)</button>
+<button class="purple" onclick="testCloseWebviewInactive()">closeWebview (inactive)</button>
+<button class="purple" onclick="testCloseWebviewBackToPointHome()">closeWebview (backToPointHome)
+</button>
+<button class="purple" onclick="testGetPointDiscount()">getPointDiscount (with ID)</button>
+<button class="purple" onclick="testGetPointDiscountNull()">getPointDiscount (null)</button>
+<button class="purple" onclick="testOpenExternalBrowser()">openExternalBrowser</button>
+
+<!-- Callback log -->
+<div id="callbackDisplay">
+    <h2>📋 Callback Log</h2>
+    <div id="callbackLog">Waiting for events...</div>
 </div>
 </body>
 </html>
