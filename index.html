@@ -179,10 +179,10 @@
         // ---------------------------
         // ROUTING Flow
         // ---------------------------
-        function sendRouting(destination, additionalParams = null, params = null, mode = null, couponId = null) {
+        function sendRouting(destination, additionalParams = null, params = null, mode = null, couponId = null, payeeCode = null, campaignId = null, callbackMode = null) {
           const initPayload = {
             command: "ROUTING",
-            content: { destination, additionalParams, params, mode, couponId }
+            content: { destination, additionalParams, params, mode, couponId, payeeCode, campaignId, callbackMode }
           };
           const body = JSON.stringify(initPayload);
 
@@ -218,6 +218,9 @@
         function routePocketDetail() { sendRouting("POCKET_DETAIL"); }
         function routeMyCoupon() {sendRouting("COUPON", null, null, "M")}
         function routeDetailCoupon() {sendRouting("COUPON", null, null, "D", "3d1dbc9a-2221-43b9-8619-ed186d885e2020250917170417")}
+        function routeCouponToBillPayment() {sendRouting("CLICX_PAYBILL", "keyword=billPayment", null, null, null, "91238", "MP2983", "D")}
+        function routeCouponToTopUp() {sendRouting("CLICX_TOPUP", "keyword=topUp", null, null, null, "91238", "MP2983", "D")}
+        function routeCouponToScan() {sendRouting("CLICX_SCAN_QR", "keyword=scanQr", null, null, null, "91238", "MP2983", "D")}
 
     // ---------------------------
         // PointPay Bridge Helper
@@ -388,6 +391,9 @@
 <button onclick="routePocketDetail()">PocketDetail</button>
 <button onclick="routeMyCoupon()">Coupon</button>
 <button onclick="routeDetailCoupon()">CouponDetail</button>
+<button onclick="routeCouponToBillPayment()">Coupon to Bill Payment</button>
+<button onclick="routeCouponToTopUp()">Coupon to Top UP</button>
+<button onclick="routeCouponToScan()">Coupon to Scan</button>
 
 <!-- Always visible param display -->
 <div id="paramDisplay">
