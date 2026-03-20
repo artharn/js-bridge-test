@@ -219,14 +219,11 @@
           window.bridge.initializeCallback = handleInitializeResponse;
 
           if (window.webkit?.messageHandlers?.nativeInterface) {
-            console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
             window.webkit.messageHandlers.nativeInterface.postMessage(body);
           } else if (window.nativeInterface?.onRetrievePayloadString) {
-            console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
             window.nativeInterface.onRetrievePayloadString(body);
           } else {
-            console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
-            alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
+            alert(`No native bridge detected. Check console for sendSelectedCoPayCoupon payload [${campaignId}].`);
           }
         }
 
@@ -242,14 +239,11 @@
           window.bridge.initializeCallback = handleInitializeResponse;
 
           if (window.webkit?.messageHandlers?.nativeInterface) {
-            console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
             window.webkit.messageHandlers.nativeInterface.postMessage(body);
           } else if (window.nativeInterface?.onRetrievePayloadString) {
-            console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
             window.nativeInterface.onRetrievePayloadString(body);
           } else {
-            console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
-            alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
+            alert(`No native bridge detected. Check console for sendRemoveSelectedCoPayCoupon payload [].`);
           }
         }
 
