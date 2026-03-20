@@ -207,6 +207,52 @@
           }
         }
 
+        function sendSelectedCoPayCoupon(campaignId) {
+          const initPayload = {
+            command: "SELECT_COUPON_COPAY",
+            content: { campaignId}
+          };
+          const body = JSON.stringify(initPayload);
+
+          // Save callback
+          window.bridge = window.bridge || {};
+          window.bridge.initializeCallback = handleInitializeResponse;
+
+          if (window.webkit?.messageHandlers?.nativeInterface) {
+            console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
+            window.webkit.messageHandlers.nativeInterface.postMessage(body);
+          } else if (window.nativeInterface?.onRetrievePayloadString) {
+            console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
+            window.nativeInterface.onRetrievePayloadString(body);
+          } else {
+            console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
+            alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
+          }
+        }
+
+        function sendRemoveSelectedCoPayCoupon() {
+          const initPayload = {
+            command: "REMOVE_SELECTED_COPON_COPAY",
+            content: {}
+          };
+          const body = JSON.stringify(initPayload);
+
+          // Save callback
+          window.bridge = window.bridge || {};
+          window.bridge.initializeCallback = handleInitializeResponse;
+
+          if (window.webkit?.messageHandlers?.nativeInterface) {
+            console.log(`📤 Sending ROUTING to iOS [${destination}]:`, body);
+            window.webkit.messageHandlers.nativeInterface.postMessage(body);
+          } else if (window.nativeInterface?.onRetrievePayloadString) {
+            console.log(`📤 Sending ROUTING to Android [${destination}]:`, body);
+            window.nativeInterface.onRetrievePayloadString(body);
+          } else {
+            console.warn(`No native bridge found for ROUTING [${destination}]. Running fallback.`);
+            alert(`No native bridge detected. Check console for ROUTING payload [${destination}].`);
+          }
+        }
+
         // Destination functions
         function routeCloseWebview() { sendRouting("CLOSE_WEBVIEW"); }
         function routeBillPaymentLanding() { sendRouting("BILL_PAYMENT_LANDING", "page=tracking&campaignCode=xxx"); }
@@ -221,6 +267,8 @@
         function routeCouponToBillPayment() {sendRouting("CLICX_PAYBILL", "keyword=billPayment", null, null, null, "91238", "MP2983", "D")}
         function routeCouponToTopUp() {sendRouting("CLICX_TOPUP", "keyword=topUp", null, null, null, "91238", "MP2983", "D")}
         function routeCouponToScan() {sendRouting("CLICX_SCAN_QR", "keyword=scanQr", null, null, null, "91238", "MP2983", "D")}
+        function routeCallbackSelectedCoupon() {sendSelectedCoPayCoupon("campaignidxxxxxx")}
+        function routeCallbackRemoveCoupon() {sendRemoveSelectedCoPayCoupon()}
 
     // ---------------------------
         // PointPay Bridge Helper
@@ -394,6 +442,8 @@
 <button onclick="routeCouponToBillPayment()">Coupon to Bill Payment</button>
 <button onclick="routeCouponToTopUp()">Coupon to Top UP</button>
 <button onclick="routeCouponToScan()">Coupon to Scan</button>
+<button onclick="routeCallbackSelectedCoupon()">Callback selected campaign id</button>
+<button onclick="routeCallbackRemoveCoupon()">Callback removed campaign id</button>
 
 <!-- Always visible param display -->
 <div id="paramDisplay">
