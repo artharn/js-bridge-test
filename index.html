@@ -328,6 +328,11 @@
           callPointPay('closeWebview', 'backToPointHome');
         }
 
+        function testCloseWebviewToLinkFlow() {
+          appendCallbackLog(`📤 closeWebview | data: goToLinkageFlow`);
+          callPointPay('closeWebview', 'goToLinkageFlow');
+        }
+
         // getPointDiscount — with UUID
         function testGetPointDiscount() {
           const pointPayTransactionID = generateUUID();
@@ -450,8 +455,9 @@
 <button class="purple" onclick="testInternalPartnerPinVerify()">internalPartnerPinVerify</button>
 <button class="purple" onclick="testCloseWebviewRegistered()">closeWebview (registered)</button>
 <button class="purple" onclick="testCloseWebviewInactive()">closeWebview (inactive)</button>
-<button class="purple" onclick="testCloseWebviewBackToPointHome()">closeWebview (backToPointHome)
-</button>
+<button class="purple" onclick="testCloseWebviewBackToPointHome()">closeWebview (backToPointHome)</button>
+<button class="purple" onclick="testCloseWebview()">closeWebview (no data)</button>
+<button class="purple" onclick="testCloseWebviewToLinkFlow()">closeWebview (goToLinkageFlow)</button>
 <button class="purple" onclick="testGetPointDiscount()">getPointDiscount (with ID)</button>
 <button class="purple" onclick="testGetPointDiscountNull()">getPointDiscount (null)</button>
 <button class="purple" onclick="testOpenExternalBrowser()">openExternalBrowser</button>
