@@ -353,6 +353,13 @@
           callPointPay('openExternalBrowser', url);
         }
 
+        // openRegisterBluePlusBrowser
+        function testOpenRegisterBluePlusBrowser() {
+          const url = 'https://www.google.com';
+          appendCallbackLog(`📤 RegisterBluePlus | url: ${url}`);
+          callPointPay('registerBluePlus', url);
+        }
+
         // ---------------------------
         // Native → WebView: PointPay Callbacks
         // ---------------------------
@@ -461,6 +468,7 @@
 <button class="purple" onclick="testGetPointDiscount()">getPointDiscount (with ID)</button>
 <button class="purple" onclick="testGetPointDiscountNull()">getPointDiscount (null)</button>
 <button class="purple" onclick="testOpenExternalBrowser()">openExternalBrowser</button>
+<button class="purple" onclick="testOpenRegisterBluePlusBrowser()">openBluePlusBrowser</button>
 
 <!-- Callback log -->
 <div id="callbackDisplay">
