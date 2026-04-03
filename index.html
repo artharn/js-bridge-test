@@ -268,13 +268,13 @@
         // PointPay Bridge Helper
         // ---------------------------
         function callPointPay(fnName, ...args) {
-          const isAndroid = !!(window.pointPayCH);
+          const isAndroid = !!(window.pointPayInterface);
           const isIOS = !!(window.webkit?.messageHandlers?.observer);
 
-          console.log(`📤 Calling pointPayCH.${fnName}(${args.join(', ')}) — Android: ${isAndroid}, iOS: ${isIOS}`);
+          console.log(`📤 Calling pointPayInterface.${fnName}(${args.join(', ')}) — Android: ${isAndroid}, iOS: ${isIOS}`);
 
           if (isAndroid) {
-            window.pointPayCH[fnName](...args);
+            window.pointPayInterface[fnName](...args);
           } else if (isIOS) {
             // iOS uses observer postMessage with command key
             const message = { command: fnName };
@@ -285,8 +285,8 @@
             if (fnName === 'openExternalBrowser') message.data = args[0];
             window.webkit.messageHandlers.observer.postMessage(message);
           } else {
-            console.warn(`⚠️ No pointPayCH bridge found for: ${fnName}`);
-            alert(`[MOCK] pointPayCH.${fnName}(${args.join(', ')})\n\nNo native bridge detected.`);
+            console.warn(`⚠️ No pointPayInterface bridge found for: ${fnName}`);
+            alert(`[MOCK] pointPayInterface.${fnName}(${args.join(', ')})\n\nNo native bridge detected.`);
           }
         }
 
@@ -304,8 +304,8 @@
         // closeWebview variants
         function testCloseWebview() {
           appendCallbackLog(`📤 closeWebview (no data)`);
-          if (window.pointPayCH) {
-            window.pointPayCH.closeWebview();
+          if (window.pointPayInterface) {
+            window.pointPayInterface.closeWebview();
           } else if (window.webkit?.messageHandlers?.observer) {
             window.webkit.messageHandlers.observer.postMessage({ command: 'closeWebview' });
           } else {
